@@ -1,0 +1,43 @@
+name: Generate Clash Config
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每天运行一次
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        pip install requests pyyaml
+
+    - name: Run script
+      run: python main.py
+
+    - name: Move file to docs folder
+      run: |
+        mkdir -p docs
+        mv clash_config.yaml docs/clash_config.yaml
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add docs/clash_config.yaml
+        git commit -m 'Update clash_config.yaml'
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
